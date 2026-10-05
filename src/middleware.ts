@@ -37,16 +37,21 @@ export async function middleware(request: NextRequest) {
       }
     }
 
-    // Provider guard
+    // Provider guard (Workers, and Cooperative Admins for oversight)
     if (isProviderPath) {
-      if (role !== 'WORKER') {
+      if (role !== 'WORKER' && role !== 'COOPERATIVE_ADMIN' && role !== 'FEDERATION_ADMIN') {
         return NextResponse.redirect(new URL('/forbidden', request.url));
       }
     }
 
-    // Customer guard
+    // Customer guard (Customers, Family Members, and Cooperative Admins for support)
     if (isCustomerPath) {
-      if (role !== 'CUSTOMER' && role !== 'FAMILY_MEMBER') {
+      if (
+        role !== 'CUSTOMER' &&
+        role !== 'FAMILY_MEMBER' &&
+        role !== 'COOPERATIVE_ADMIN' &&
+        role !== 'FEDERATION_ADMIN'
+      ) {
         return NextResponse.redirect(new URL('/forbidden', request.url));
       }
     }

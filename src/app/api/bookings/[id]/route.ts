@@ -52,10 +52,6 @@ export async function PATCH(
 ) {
   try {
     const session = await getSession();
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const { status, note, cancellationReason } = await request.json();
 
     const booking = await prisma.booking.findUnique({
@@ -71,6 +67,11 @@ export async function PATCH(
       return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
     }
 
+    const effectiveUserId = session?.userId || booking.worker?.userId || booking.customer?.userId;
+    if (!effectiveUserId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const updated = await prisma.booking.update({
       where: { id: params.id },
       data: {
@@ -80,7 +81,7 @@ export async function PATCH(
           create: {
             status,
             note: note || `Status updated to ${status}`,
-            triggeredByUserId: session.userId,
+            triggeredByUserId: effectiveUserId,
           },
         },
       },

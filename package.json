@@ -11,6 +11,7 @@
     "prisma:push": "prisma db push",
     "prisma:seed": "node scripts/seed.mjs",
     "setup": "npm install && npx prisma generate && npx prisma db push && node scripts/seed.mjs",
+    "postinstall": "prisma generate",
     "test:e2e": "playwright test"
   },
   "dependencies": {

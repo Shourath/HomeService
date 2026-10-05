@@ -140,7 +140,7 @@ export async function POST(request: Request) {
       title: 'Family Membership Activated! 🎉',
       message: `Your Annual Family Membership is active until ${endDate.toLocaleDateString()}. Enjoy priority dispatch and emergency services.`,
       type: 'PAYMENT',
-      linkUrl: '/customer/membership',
+      linkUrl: '/membership',
     });
 
     return NextResponse.json({

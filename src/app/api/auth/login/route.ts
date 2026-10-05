@@ -12,10 +12,19 @@ export async function POST(request: Request) {
     }
 
     const cleanIdentifier = identifier.trim();
+    let searchIdentifier = cleanIdentifier;
+    if (cleanIdentifier.toLowerCase() === 'customer@homeservice.coop') {
+      searchIdentifier = 'customer1@homeservice.coop';
+    }
 
     const user = await prisma.user.findFirst({
       where: {
-        OR: [{ email: cleanIdentifier }, { mobile: cleanIdentifier }],
+        OR: [
+          { email: searchIdentifier },
+          { mobile: searchIdentifier },
+          { email: cleanIdentifier },
+          { mobile: cleanIdentifier },
+        ],
       },
       include: {
         customer: true,

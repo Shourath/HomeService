@@ -8,7 +8,7 @@ export async function GET() {
   try {
     const session = await getSession();
     if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ success: true, notifications: [], unreadCount: 0 });
     }
 
     const notifications = await prisma.notification.findMany({

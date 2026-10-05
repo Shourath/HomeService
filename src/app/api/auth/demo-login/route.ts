@@ -11,6 +11,7 @@ export async function POST(request: Request) {
     let targetMobile: string | null = null;
 
     switch (accountType) {
+      case 'customer':
       case 'customer1':
         targetEmail = 'customer1@homeservice.coop';
         break;
@@ -20,6 +21,7 @@ export async function POST(request: Request) {
       case 'family_member':
         targetMobile = '9876543212';
         break;
+      case 'worker':
       case 'kumar_plumber':
         targetEmail = 'kumar.plumber@homeservice.coop';
         break;
@@ -29,6 +31,7 @@ export async function POST(request: Request) {
       case 'unverified_worker':
         targetEmail = 'ravi.unverified@homeservice.coop';
         break;
+      case 'admin':
       case 'coop_admin':
         targetEmail = 'admin@homeservice.coop';
         break;

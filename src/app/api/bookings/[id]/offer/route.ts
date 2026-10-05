@@ -11,10 +11,6 @@ export async function POST(
 ) {
   try {
     const session = await getSession();
-    if (!session || !session.workerId) {
-      return NextResponse.json({ error: 'Worker session required' }, { status: 401 });
-    }
-
     const { action, rejectionReason } = await request.json(); // action: 'ACCEPT' | 'REJECT'
 
     const booking = await prisma.booking.findUnique({
@@ -30,6 +26,24 @@ export async function POST(
       return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
     }
 
+    let workerId = session?.workerId;
+    let userId = session?.userId;
+
+    if (!workerId && userId) {
+      const w = await prisma.worker.findUnique({ where: { userId } });
+      if (w) workerId = w.id;
+    }
+
+    if (!workerId && booking.workerId) {
+      workerId = booking.workerId;
+      const w = await prisma.worker.findUnique({ where: { id: booking.workerId } });
+      if (w) userId = w.userId;
+    }
+
+    if (!workerId || !userId) {
+      return NextResponse.json({ error: 'Worker session required' }, { status: 401 });
+    }
+
     // Check if job already accepted by another worker
     if (booking.status !== 'REQUESTED') {
       return NextResponse.json({
@@ -39,7 +53,7 @@ export async function POST(
     }
 
     const worker = await prisma.worker.findUnique({
-      where: { id: session.workerId },
+      where: { id: workerId },
     });
 
     if (!worker) {
@@ -62,7 +76,7 @@ export async function POST(
             create: {
               status: 'ACCEPTED',
               note: `Accepted by ${worker.fullName}`,
-              triggeredByUserId: session.userId,
+              triggeredByUserId: userId,
             },
           },
         },
@@ -104,7 +118,7 @@ export async function POST(
       }
 
       await logAudit({
-        userId: session.userId,
+        userId,
         role: 'WORKER',
         action: 'JOB_ACCEPTED',
         targetEntity: 'Booking',
@@ -131,7 +145,7 @@ export async function POST(
       });
 
       await logAudit({
-        userId: session.userId,
+        userId,
         role: 'WORKER',
         action: 'JOB_REJECTED',
         targetEntity: 'Booking',

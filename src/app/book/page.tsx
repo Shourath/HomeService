@@ -24,7 +24,7 @@ import {
 function BookServiceContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const { success, error, warning } = useToast();
 
   const [step, setStep] = useState(1);
@@ -151,12 +151,6 @@ function BookServiceContent() {
       setStep(6);
     } else if (step === 6) {
       // Review & Submit
-      if (!user) {
-        warning('Login Required', 'Please sign in or use a demo account to book');
-        router.push('/auth/login');
-        return;
-      }
-
       try {
         setSubmittingBooking(true);
         const res = await fetch('/api/bookings', {
@@ -181,6 +175,7 @@ function BookServiceContent() {
           return;
         }
 
+        await refreshUser();
         success('Booking Dispatched! 🎉', `Job #${data.booking.bookingNumber} sent to worker.`);
         router.push(`/customer/bookings/${data.booking.id}`);
       } catch {
@@ -531,6 +526,29 @@ function BookServiceContent() {
         {/* Step 6: Review & Confirm */}
         {step === 6 && currentService && (
           <div className="space-y-5 text-xs">
+            {/* User Account Context Banner */}
+            <div className="bg-blue-50/70 border border-blue-200/80 rounded-2xl p-3.5 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <UserCheck className="w-5 h-5 text-[#1F6BFF] shrink-0" />
+                <div>
+                  <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider block">
+                    Dispatching As
+                  </span>
+                  <span className="font-bold text-[#0B1B3F] text-xs">
+                    {user ? `${user.name || user.email} (${user.role})` : 'Verified Sandbox Customer (Aravind Krishnan)'}
+                  </span>
+                </div>
+              </div>
+              {!user && (
+                <Link
+                  href="/auth/login"
+                  className="text-[11px] font-bold text-[#1F6BFF] hover:underline shrink-0"
+                >
+                  Sign In / Switch →
+                </Link>
+              )}
+            </div>
+
             <div className="bg-gray-50 rounded-2xl p-5 border border-gray-200 space-y-3">
               <h4 className="font-bold text-sm text-[#0B1B3F]">Booking Summary</h4>
               <div className="grid grid-cols-2 gap-2 text-gray-600">

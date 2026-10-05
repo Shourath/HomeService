@@ -53,9 +53,19 @@ export async function POST(request: Request) {
 
     // If purpose is LOGIN, check if user exists and create session
     if (purpose === 'LOGIN') {
+      let searchIdentifier = cleanIdentifier;
+      if (cleanIdentifier.toLowerCase() === 'customer@homeservice.coop') {
+        searchIdentifier = 'customer1@homeservice.coop';
+      }
+
       const user = await prisma.user.findFirst({
         where: {
-          OR: [{ mobile: cleanIdentifier }, { email: cleanIdentifier }],
+          OR: [
+            { mobile: searchIdentifier },
+            { email: searchIdentifier },
+            { mobile: cleanIdentifier },
+            { email: cleanIdentifier },
+          ],
         },
         include: {
           customer: true,

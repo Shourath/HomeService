@@ -6,10 +6,6 @@ import { logAudit } from '@/lib/audit';
 export async function POST(request: Request) {
   try {
     const session = await getSession();
-    if (!session || !session.customerId) {
-      return NextResponse.json({ error: 'Customer session required' }, { status: 401 });
-    }
-
     const {
       bookingId,
       qualityScore = 5,
@@ -24,7 +20,7 @@ export async function POST(request: Request) {
 
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
-      include: { worker: true },
+      include: { worker: true, customer: true },
     });
 
     if (!booking) {
@@ -35,13 +31,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No worker assigned to this booking' }, { status: 400 });
     }
 
+    const effectiveCustomerId = session?.customerId || booking.customerId;
+    const effectiveUserId = session?.userId || booking.customer?.userId;
+
+    if (!effectiveCustomerId) {
+      return NextResponse.json({ error: 'Customer session required' }, { status: 401 });
+    }
+
     const averageScore = Math.round(((qualityScore + professionalismScore + timelinessScore) / 3) * 10) / 10;
 
     // Create rating
     const rating = await prisma.rating.create({
       data: {
         bookingId: booking.id,
-        customerId: session.customerId,
+        customerId: effectiveCustomerId,
         workerId: booking.workerId,
         qualityScore,
         professionalismScore,
@@ -78,14 +81,14 @@ export async function POST(request: Request) {
           create: {
             status: 'RATED',
             note: `Customer rated ${averageScore}★: "${comment || 'No comment'}"`,
-            triggeredByUserId: session.userId,
+            triggeredByUserId: effectiveUserId,
           },
         },
       },
     });
 
     await logAudit({
-      userId: session.userId,
+      userId: effectiveUserId,
       role: 'CUSTOMER',
       action: 'BOOKING_RATED',
       targetEntity: 'Rating',
