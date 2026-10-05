@@ -10,7 +10,7 @@ import { DemoAccountsDrawer } from '@/components/common/DemoAccountsDrawer';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { refreshUser } = useAuth();
+  const { refreshUser, loginDemo } = useAuth();
   const { success, error, warning } = useToast();
 
   const [activeTab, setActiveTab] = useState<'PASSWORD' | 'OTP'>('PASSWORD');
@@ -49,8 +49,7 @@ export default function LoginPage() {
       }
 
       success('Welcome Back!', `Signed in as ${data.user.name}`);
-      await refreshUser();
-      router.push(data.redirectUrl);
+      window.location.href = data.redirectUrl || '/';
     } catch {
       error('Connection Error', 'Failed to reach authentication server');
     } finally {
@@ -131,8 +130,7 @@ export default function LoginPage() {
       }
 
       success('Verified!', 'Logged in successfully via OTP');
-      await refreshUser();
-      router.push(data.redirectUrl);
+      window.location.href = data.redirectUrl || '/';
     } catch {
       error('Connection Error', 'Failed to verify OTP code');
     } finally {
@@ -158,16 +156,70 @@ export default function LoginPage() {
         </div>
 
         {/* 1-Click Demo Accounts Quick Trigger */}
-        <div className="bg-[#FFB41F]/15 border border-[#FFB41F]/40 backdrop-blur-md rounded-2xl p-3.5 mb-6 text-center text-xs">
-          <div className="flex items-center justify-between gap-2">
+        <div className="bg-[#FFB41F]/15 border border-[#FFB41F]/40 backdrop-blur-md rounded-2xl p-4 mb-6 text-xs text-white">
+          <div className="flex items-center justify-between gap-2 mb-2.5">
             <span className="text-[#FFB41F] font-bold flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4" /> Want to test quickly?
+              <Sparkles className="w-4 h-4" /> Instant 1-Click Demo Logins:
             </span>
             <button
+              type="button"
               onClick={() => setDemoDrawerOpen(true)}
-              className="bg-[#FFB41F] text-[#0B1B3F] font-black px-3 py-1.5 rounded-full hover:bg-amber-400 transition"
+              className="text-[11px] text-[#FFB41F] hover:underline font-bold"
             >
-              Try Demo Accounts
+              All 8 Personas →
+            </button>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              disabled={isLoading}
+              onClick={() => loginDemo('customer1')}
+              className="bg-white/10 hover:bg-[#FFB41F] hover:text-[#0B1B3F] text-white border border-white/20 p-2.5 rounded-xl font-bold text-left transition flex items-center gap-2 group"
+            >
+              <span className="text-base">👨🏽‍💼</span>
+              <div className="min-w-0">
+                <span className="block truncate font-bold text-[11px]">Customer</span>
+                <span className="block text-[10px] text-blue-200 group-hover:text-blue-900 truncate">Aravind (Subscribed)</span>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              disabled={isLoading}
+              onClick={() => loginDemo('kumar_plumber')}
+              className="bg-white/10 hover:bg-[#FFB41F] hover:text-[#0B1B3F] text-white border border-white/20 p-2.5 rounded-xl font-bold text-left transition flex items-center gap-2 group"
+            >
+              <span className="text-base">👨🏽‍🔧</span>
+              <div className="min-w-0">
+                <span className="block truncate font-bold text-[11px]">Plumber</span>
+                <span className="block text-[10px] text-blue-200 group-hover:text-blue-900 truncate">Kumar (Level 4)</span>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              disabled={isLoading}
+              onClick={() => loginDemo('rajesh_electrician')}
+              className="bg-white/10 hover:bg-[#FFB41F] hover:text-[#0B1B3F] text-white border border-white/20 p-2.5 rounded-xl font-bold text-left transition flex items-center gap-2 group"
+            >
+              <span className="text-base">⚡</span>
+              <div className="min-w-0">
+                <span className="block truncate font-bold text-[11px]">Electrician</span>
+                <span className="block text-[10px] text-blue-200 group-hover:text-blue-900 truncate">Rajesh (Level 5)</span>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              disabled={isLoading}
+              onClick={() => loginDemo('coop_admin')}
+              className="bg-white/10 hover:bg-[#FFB41F] hover:text-[#0B1B3F] text-white border border-white/20 p-2.5 rounded-xl font-bold text-left transition flex items-center gap-2 group"
+            >
+              <span className="text-base">🏛️</span>
+              <div className="min-w-0">
+                <span className="block truncate font-bold text-[11px]">Coop Admin</span>
+                <span className="block text-[10px] text-blue-200 group-hover:text-blue-900 truncate">Tambaram Society</span>
+              </div>
             </button>
           </div>
         </div>

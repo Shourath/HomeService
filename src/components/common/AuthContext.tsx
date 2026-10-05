@@ -62,7 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await res.json();
       if (data.success && data.user) {
         setUser(data.user);
-        router.push(data.redirectUrl);
+        window.location.href = data.redirectUrl || '/';
         return true;
       }
       return false;
@@ -78,7 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
       setUser(null);
-      router.push('/');
+      window.location.href = '/';
     } catch (e) {
       console.error('Logout error:', e);
     }
