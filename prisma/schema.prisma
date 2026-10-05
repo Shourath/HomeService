@@ -1,0 +1,536 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id                  String       @id @default(uuid())
+  email               String?      @unique
+  mobile              String       @unique
+  passwordHash        String
+  role                String       @default("CUSTOMER") // CUSTOMER, FAMILY_MEMBER, WORKER, COOPERATIVE_ADMIN, FEDERATION_ADMIN
+  status              String       @default("ACTIVE")   // ACTIVE, PENDING_VERIFICATION, SUSPENDED, LOCKED
+  failedLoginAttempts Int          @default(0)
+  lockUntil           DateTime?
+  preferredLanguage   String       @default("en")
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  customer            Customer?
+  worker              Worker?
+  notifications       Notification[]
+  consents            Consent[]
+  auditLogs           AuditLog[]
+}
+
+model Customer {
+  id            String          @id @default(uuid())
+  userId        String          @unique
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName      String
+  city          String          @default("Chennai")
+  pinCode       String          @default("600045")
+  address       String
+  latitude      Float           @default(12.9249)
+  longitude     Float           @default(80.1472)
+  photoUrl      String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  familyMembers FamilyMember[]
+  bookings      Booking[]
+  subscriptions Subscription[]
+  ratings       Rating[]
+  payments      Payment[]
+  invoices      Invoice[]
+}
+
+model FamilyMember {
+  id                String          @id @default(uuid())
+  customerId        String
+  customer          Customer        @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  name              String
+  mobile            String
+  canBook           Boolean         @default(true)
+  canBookEmergency  Boolean         @default(false)
+  canViewPayments   Boolean         @default(false)
+  status            String          @default("ACTIVE")
+  inviteToken       String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  subscriptionMembers SubscriptionMember[]
+}
+
+model Cooperative {
+  id                 String     @id @default(uuid())
+  name               String
+  code               String     @unique
+  state              String     @default("Tamil Nadu")
+  district           String     @default("Chennai")
+  contactEmail       String?
+  contactPhone       String?
+  address            String?
+  activeWorkersCount Int        @default(0)
+  createdAt          DateTime   @default(now())
+
+  societies          Society[]
+  workers            Worker[]
+}
+
+model Society {
+  id                 String            @id @default(uuid())
+  cooperativeId      String
+  cooperative        Cooperative       @relation(fields: [cooperativeId], references: [id], onDelete: Cascade)
+  name               String
+  code               String            @unique
+  zone               String
+  address            String?
+  createdAt          DateTime          @default(now())
+
+  workers            Worker[]
+  demandAnalytics    DemandAnalytics[]
+  allocationsFrom    WorkerAllocation[] @relation("AllocationFromZone")
+  allocationsTo      WorkerAllocation[] @relation("AllocationToZone")
+}
+
+model Worker {
+  id                    String                 @id @default(uuid())
+  userId                String                 @unique
+  user                  User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName              String
+  mobile                String
+  primaryCategory       String                 @default("Home & Repair")
+  experienceYears       Int                    @default(1)
+  cooperativeId         String?
+  cooperative           Cooperative?           @relation(fields: [cooperativeId], references: [id])
+  societyId             String?
+  society               Society?               @relation(fields: [societyId], references: [id])
+  workingHours          String                 @default("08:00 - 18:00")
+  areasServed           String                 @default("Tambaram, Chromepet, Pallavaram, Guindy")
+  kycDocType            String                 @default("AADHAAR")
+  kycDocNumberEncrypted String                 @default("")
+  kycStatus             String                 @default("PENDING") // PENDING, VERIFIED, REJECTED
+  bankAccountEncrypted  String                 @default("")
+  upiIdEncrypted        String                 @default("")
+  currentLevel          Int                    @default(1) // 1 Registered, 2 Verified, 3 Certified, 4 Advanced, 5 Expert
+  profileCompletionPct  Int                    @default(70)
+  isAvailable           Boolean                @default(true)
+  isBusy                Boolean                @default(false)
+  isOffline             Boolean                @default(false)
+  isEmergencyAvailable  Boolean                @default(true)
+  ratingAvg             Float                  @default(5.0)
+  ratingCount           Int                    @default(0)
+  totalJobsCompleted    Int                    @default(0)
+  latitude              Float                  @default(12.9249)
+  longitude             Float                  @default(80.1472)
+  address               String                 @default("Chennai, Tamil Nadu")
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+
+  skills                WorkerSkill[]
+  certifications        WorkerCertification[]
+  trainings             WorkerTraining[]
+  availabilities        WorkerAvailability[]
+  bookings              Booking[]
+  offers                BookingOffer[]
+  ratings               Rating[]
+  payments              Payment[]
+  invoices              Invoice[]
+  welfareEnrollments    WorkerWelfare[]
+  insuranceCoverages    InsuranceCoverage[]
+  subscriptions         WorkerSubscription[]
+}
+
+model WorkerSkill {
+  id                 String       @id @default(uuid())
+  workerId           String
+  worker             Worker       @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  serviceId          String
+  service            Service      @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  experienceYears    Int          @default(1)
+  isVerified         Boolean      @default(false)
+  verifiedByAdminId  String?
+  verifiedAt         DateTime?
+  createdAt          DateTime     @default(now())
+}
+
+model WorkerCertification {
+  id                String       @id @default(uuid())
+  workerId          String
+  worker            Worker       @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  certificateTitle  String
+  issuingAuthority  String
+  certificateUrl    String?
+  status            String       @default("PENDING") // PENDING, VERIFIED, REJECTED
+  rejectionReason   String?
+  verifiedAt        DateTime?
+  createdAt         DateTime     @default(now())
+}
+
+model WorkerTraining {
+  id                 String       @id @default(uuid())
+  workerId           String
+  worker             Worker       @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  courseId           String
+  courseTitle        String
+  status             String       @default("ENROLLED") // ENROLLED, IN_PROGRESS, COMPLETED
+  score              Float?
+  completedAt        DateTime?
+  certificateNumber  String?
+  createdAt          DateTime     @default(now())
+}
+
+model WorkerAvailability {
+  id          String       @id @default(uuid())
+  workerId    String
+  worker      Worker       @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  dayOfWeek   Int          // 0 = Sunday, 1 = Monday ... 6 = Saturday
+  startTime   String       @default("08:00")
+  endTime     String       @default("18:00")
+  isEnabled   Boolean      @default(true)
+}
+
+model ServiceCategory {
+  id           String      @id @default(uuid())
+  slug         String      @unique
+  name         String
+  nameTa       String?
+  nameHi       String?
+  nameTe       String?
+  nameKn       String?
+  nameMl       String?
+  description  String
+  iconName     String      @default("Wrench")
+  colorChip    String      @default("orange") // orange, blue, purple, green
+  displayOrder Int         @default(0)
+  createdAt    DateTime    @default(now())
+
+  services     Service[]
+}
+
+model Service {
+  id                   String           @id @default(uuid())
+  categoryId           String
+  category             ServiceCategory  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  slug                 String           @unique
+  name                 String
+  nameTa               String?
+  nameHi               String?
+  nameTe               String?
+  nameKn               String?
+  nameMl               String?
+  description          String
+  basePrice            Float
+  durationMinutes      Int              @default(60)
+  isEmergencyEligible  Boolean          @default(false)
+  requiredLevel        Int              @default(1)
+  createdAt            DateTime         @default(now())
+
+  workerSkills         WorkerSkill[]
+  bookings             Booking[]
+  demandAnalytics      DemandAnalytics[]
+  allocations          WorkerAllocation[]
+}
+
+model Booking {
+  id                  String                 @id @default(uuid())
+  bookingNumber       String                 @unique
+  customerId          String
+  customer            Customer               @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  workerId            String?
+  worker              Worker?                @relation(fields: [workerId], references: [id])
+  serviceId           String
+  service             Service                @relation(fields: [serviceId], references: [id])
+  status              String                 @default("REQUESTED") // REQUESTED, ACCEPTED, ON_THE_WAY, ARRIVED, SERVICE_STARTED, COMPLETED, CUSTOMER_CONFIRMED, PAYMENT_COMPLETED, RATED, CANCELLED, EXPIRED
+  isEmergency         Boolean                @default(false)
+  scheduledDate       String
+  scheduledTime       String
+  customerAddress     String
+  customerLat         Float                  @default(12.9249)
+  customerLng         Float                  @default(80.1472)
+  approximateArea     String                 @default("Tambaram Zone")
+  issueDescription    String
+  notes               String?
+  totalAmount         Float
+  platformFee         Float                  @default(0)
+  cooperativeShare    Float                  @default(0)
+  workerEarnings      Float                  @default(0)
+  paymentStatus       String                 @default("PENDING") // PENDING, COMPLETED, REFUNDED
+  cancellationReason  String?
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+
+  statusHistory       BookingStatusHistory[]
+  offers              BookingOffer[]
+  payments            Payment[]
+  invoices            Invoice[]
+  rating              Rating?
+}
+
+model BookingStatusHistory {
+  id                String       @id @default(uuid())
+  bookingId         String
+  booking           Booking      @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  status            String
+  note              String?
+  triggeredByUserId String?
+  createdAt         DateTime     @default(now())
+}
+
+model BookingOffer {
+  id              String       @id @default(uuid())
+  bookingId       String
+  booking         Booking      @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  workerId        String
+  worker          Worker       @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  status          String       @default("OFFERED") // OFFERED, ACCEPTED, REJECTED, EXPIRED
+  rejectionReason String?
+  offeredAt       DateTime     @default(now())
+  expiresAt       DateTime
+  respondedAt     DateTime?
+}
+
+model Payment {
+  id             String        @id @default(uuid())
+  paymentNumber  String        @unique
+  bookingId      String?
+  booking        Booking?      @relation(fields: [bookingId], references: [id])
+  subscriptionId String?
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
+  customerId     String?
+  customer       Customer?     @relation(fields: [customerId], references: [id])
+  workerId       String?
+  worker         Worker?       @relation(fields: [workerId], references: [id])
+  amount         Float
+  paymentMethod  String        @default("UPI") // UPI, CARD, NET_BANKING, WALLET
+  transactionRef String
+  status         String        @default("SUCCESS") // SUCCESS, PENDING, FAILED, REFUNDED
+  isDemo         Boolean       @default(true)
+  breakdownJson  String?
+  createdAt      DateTime      @default(now())
+}
+
+model Invoice {
+  id             String        @id @default(uuid())
+  invoiceNumber  String        @unique
+  bookingId      String?
+  booking        Booking?      @relation(fields: [bookingId], references: [id])
+  subscriptionId String?
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
+  customerId     String
+  customer       Customer      @relation(fields: [customerId], references: [id])
+  workerId       String?
+  worker         Worker?       @relation(fields: [workerId], references: [id])
+  serviceName    String
+  baseAmount     Float
+  platformFee    Float         @default(0)
+  taxAmount      Float         @default(0)
+  totalAmount    Float
+  pdfUrl         String?
+  status         String        @default("PAID")
+  issuedDate     DateTime      @default(now())
+  createdAt      DateTime      @default(now())
+}
+
+model Subscription {
+  id            String               @id @default(uuid())
+  customerId    String
+  customer      Customer             @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  planType      String               @default("ANNUAL_FAMILY") // INDIVIDUAL, ANNUAL_FAMILY
+  price         Float                @default(1499)
+  startDate     DateTime             @default(now())
+  endDate       DateTime
+  status        String               @default("ACTIVE") // ACTIVE, EXPIRED, CANCELLED
+  isDemo        Boolean              @default(true)
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+
+  members       SubscriptionMember[]
+  payments      Payment[]
+  invoices      Invoice[]
+}
+
+model SubscriptionMember {
+  id             String        @id @default(uuid())
+  subscriptionId String
+  subscription   Subscription  @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  familyMemberId String
+  familyMember   FamilyMember  @relation(fields: [familyMemberId], references: [id], onDelete: Cascade)
+  addedAt        DateTime      @default(now())
+
+  @@unique([subscriptionId, familyMemberId])
+}
+
+model WorkerSubscription {
+  id          String       @id @default(uuid())
+  workerId    String
+  worker      Worker       @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  planType    String       @default("ANNUAL_WORKER")
+  price       Float        @default(499)
+  startDate   DateTime     @default(now())
+  endDate     DateTime
+  status      String       @default("ACTIVE") // ACTIVE, EXPIRED
+  isDemo      Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+}
+
+model Rating {
+  id                   String       @id @default(uuid())
+  bookingId            String       @unique
+  booking              Booking      @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  customerId           String
+  customer             Customer     @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  workerId             String
+  worker               Worker       @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  qualityScore         Int          @default(5)
+  professionalismScore Int          @default(5)
+  timelinessScore      Int          @default(5)
+  averageScore         Float        @default(5.0)
+  comment              String?
+  createdAt            DateTime     @default(now())
+}
+
+model WelfareScheme {
+  id                  String          @id @default(uuid())
+  title               String
+  description         String
+  category            String          @default("Health & Safety")
+  eligibilityCriteria String
+  benefitAmount       String
+  providerLabel       String          @default("Tamil Nadu Unorganised Workers Welfare Board")
+  isDemo              Boolean         @default(true)
+  createdAt           DateTime        @default(now())
+
+  workerEnrollments   WorkerWelfare[]
+}
+
+model WorkerWelfare {
+  id          String         @id @default(uuid())
+  workerId    String
+  worker      Worker         @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  schemeId    String
+  scheme      WelfareScheme  @relation(fields: [schemeId], references: [id], onDelete: Cascade)
+  status      String         @default("ACTIVE")
+  enrolledAt  DateTime       @default(now())
+}
+
+model InsuranceCoverage {
+  id            String           @id @default(uuid())
+  workerId      String
+  worker        Worker           @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  policyNumber  String           @unique
+  coverageType  String           @default("Accident & Health")
+  sumInsured    Float            @default(200000)
+  validTill     DateTime
+  providerLabel String           @default("Cooperative Group Mutual Aid (Sandbox Demo)")
+  isDemo        Boolean          @default(true)
+  createdAt     DateTime         @default(now())
+
+  claims        InsuranceClaim[]
+}
+
+model InsuranceClaim {
+  id           String             @id @default(uuid())
+  coverageId   String
+  coverage     InsuranceCoverage  @relation(fields: [coverageId], references: [id], onDelete: Cascade)
+  workerId     String
+  claimAmount  Float
+  reason       String
+  incidentDate DateTime
+  status       String             @default("PENDING") // PENDING, APPROVED, REJECTED
+  notes        String?
+  filedAt      DateTime           @default(now())
+}
+
+model Notification {
+  id        String       @id @default(uuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      String       @default("STATUS_UPDATE")
+  isRead    Boolean      @default(false)
+  readAt    DateTime?
+  linkUrl   String?
+  createdAt DateTime     @default(now())
+}
+
+model OtpCode {
+  id             String       @id @default(uuid())
+  mobileOrEmail  String
+  code           String
+  purpose        String       @default("LOGIN")
+  expiresAt      DateTime
+  attempts       Int          @default(0)
+  isUsed         Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+}
+
+model DemandAnalytics {
+  id                      String       @id @default(uuid())
+  societyId               String
+  society                 Society      @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  serviceId               String
+  service                 Service      @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  date                    String       // YYYY-MM-DD
+  historicalBookingsCount Int          @default(0)
+  forecastedBookingsCount Int          @default(0)
+  demandLevel             String       @default("NORMAL") // LOW, NORMAL, HIGH, CRITICAL
+  confidencePct           Int          @default(85)
+}
+
+model WorkerAllocation {
+  id                     String       @id @default(uuid())
+  societyId              String
+  serviceId              String
+  service                Service      @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  fromZoneId             String
+  fromZone               Society      @relation("AllocationFromZone", fields: [fromZoneId], references: [id])
+  toZoneId               String
+  toZone                 Society      @relation("AllocationToZone", fields: [toZoneId], references: [id])
+  recommendedWorkersCount Int         @default(2)
+  reason                 String
+  status                 String       @default("PROPOSED") // PROPOSED, APPROVED, REJECTED
+  reviewedByAdminId      String?
+  reviewedAt             DateTime?
+  createdAt              DateTime     @default(now())
+}
+
+model PricingConfig {
+  id                          String   @id @default(uuid())
+  key                         String   @unique @default("DEFAULT")
+  customerAnnualFamilyPrice   Float    @default(1499)
+  workerAnnualMembershipPrice Float    @default(499)
+  platformFeePct              Float    @default(5.0)
+  cooperativeSharePct         Float    @default(5.0)
+  emergencySurchargePct       Float    @default(20.0)
+  updatedAt                   DateTime @updatedAt
+}
+
+model Consent {
+  id          String       @id @default(uuid())
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  consentType String
+  version     String       @default("1.0")
+  acceptedAt  DateTime     @default(now())
+  ipAddress   String?
+}
+
+model AuditLog {
+  id           String       @id @default(uuid())
+  userId       String?
+  user         User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  role         String?
+  action       String
+  targetEntity String
+  targetId     String?
+  detailsJson  String?
+  ipAddress    String?
+  createdAt    DateTime     @default(now())
+}

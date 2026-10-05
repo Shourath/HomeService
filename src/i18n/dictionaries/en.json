@@ -1,0 +1,106 @@
+{
+  "app_name": "HOMEService",
+  "tagline": "Labour Cooperative Digital Marketplace",
+  "nav": {
+    "home": "Home",
+    "services": "Services",
+    "bookings": "My Bookings",
+    "family": "Family Hub",
+    "membership": "Membership",
+    "payments": "Payments",
+    "profile": "Profile",
+    "provider_portal": "Worker Portal",
+    "admin_portal": "Admin Portal",
+    "need_service": "I need a service",
+    "am_provider": "I am a service provider",
+    "admin_login": "Cooperative Admin",
+    "demo_accounts": "Try Demo Accounts",
+    "sign_in": "Sign In",
+    "sign_up": "Sign Up",
+    "logout": "Log Out"
+  },
+  "hero": {
+    "badge": "100% Worker-Owned Cooperative Federation",
+    "title_part1": "Trusted Local Services,",
+    "title_part2": "Owned By Workers.",
+    "subtitle": "Fair wages for skilled tradespeople, zero corporate middleman markup, guaranteed high quality for households.",
+    "cta_book": "Book a Service",
+    "cta_provider": "I am a service provider",
+    "call_phone": "Cooperative Helpline: 1800-425-WORK",
+    "review_badge": "12,000+ verified ratings (4.9/5)",
+    "stat_coops": "24+ Cooperative Societies",
+    "stat_jobs": "12k+ Jobs Completed",
+    "stat_rating": "4.9 / 5 Average Rating",
+    "stat_ownership": "100% Worker-Owned"
+  },
+  "difference": {
+    "section_title": "The Cooperative Difference",
+    "section_subtitle": "Why choosing HOMEService empowers your community",
+    "card1_title": "Verified by Your Cooperative",
+    "card1_desc": "Every worker is an enrolled, KYC-verified society member with skills vetted by master craftspeople.",
+    "card2_title": "Fair & Transparent Earnings",
+    "card2_desc": "90%+ of your payment goes directly into the worker's hands. No predatory gig commissions.",
+    "card3_title": "Welfare-Supported Workers",
+    "card3_desc": "Every job contributes to worker health coverage, pension funds, and safety equipment.",
+    "card4_title": "Emergency Help Nearby",
+    "card4_desc": "On-demand emergency response for power, plumbing, and lockouts within minutes in your neighborhood."
+  },
+  "categories": {
+    "section_title": "Every Home Deserves Reliable Help",
+    "section_subtitle": "Professional craftsmanship across 7 essential household categories",
+    "highlight_badge": "Popular",
+    "book_now": "Book Now"
+  },
+  "steps": {
+    "section_title": "Getting Help Has Never Been Easier",
+    "section_subtitle": "Three simple steps to reliable cooperative service",
+    "step1_title": "Choose a Service",
+    "step1_desc": "Select from over 40 essential trades, specify your timing, or request immediate emergency support.",
+    "step2_title": "Get Matched with the Best Nearby Worker",
+    "step2_desc": "Our transparent cooperative algorithm ranks verified local workers by proximity, rating, and verified skills.",
+    "step3_title": "Pay Securely and Rate",
+    "step3_desc": "Review the job, pay via demo UPI/card, download your GST invoice, and support your worker with feedback."
+  },
+  "family_membership": {
+    "title": "Annual Family Membership",
+    "subtitle": "Complete peace of mind for your entire household: 1 Primary Member + 3 Family Members",
+    "price_suffix": "/ Year",
+    "benefits_title": "Member Privileges Included:",
+    "benefit1": "Up to 4 Household Members on 1 Shared Plan",
+    "benefit2": "Priority Booking & Fast-Track Allocation",
+    "benefit3": "24/7 Emergency Service Access with Zero Surcharge",
+    "benefit4": "Digital GST Invoices and Detailed Job Logs",
+    "benefit5": "Exclusive Cooperative Member Discounts",
+    "cta_join": "Join Family Plan Now",
+    "slots_label": "Household Slots: 1 Primary + 3 Family"
+  },
+  "testimonials": {
+    "title": "Trust Is Earned One Job At A Time",
+    "subtitle": "Real experiences from neighbors who rely on cooperative service"
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Everything you need to know about cooperative services and membership"
+  },
+  "cta_final": {
+    "title": "Ready To Get Reliable Help?",
+    "subtitle": "Support worker-owned cooperatives while getting top-quality service for your home.",
+    "chip1": "Cooperative Verified",
+    "chip2": "Transparent Pricing",
+    "chip3": "Fast Local Response"
+  },
+  "emergency": {
+    "button": "EMERGENCY (SOS)",
+    "title": "Cooperative Emergency Assistance",
+    "desc": "Immediate dispatched help for plumbing bursts, short circuits, lockouts & hazards."
+  },
+  "common": {
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "demo_badge": "Demo data / Sandbox",
+    "verified_badge": "Verified by your cooperative"
+  }
+}
